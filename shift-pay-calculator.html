@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift Pay Calculator</title>
+<style>
+  :root{
+    --bg:#000000;
+    --surface:#0B0B0C;
+    --surface-2:#161617;
+    --surface-3:#1F2021;
+    --text:#F2F1ED;
+    --text-dim:#7C7B77;
+    --accent:#D4A24E;
+    --accent-dim:#7A5E2C;
+    --night:#3FA79A;
+    --night-dim:#1F4842;
+    --border:#232324;
+    --danger:#C4695A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:48px;
+  }
+  .wrap{max-width:460px;margin:0 auto;padding:0 18px;}
+
+  .hero{
+    background:var(--bg);
+    padding:26px 18px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .hero-inner{max-width:460px;margin:0 auto;}
+  .hero-label{
+    font-size:12.5px;color:var(--text-dim);
+    letter-spacing:0.02em;margin-bottom:3px;
+  }
+  .hero-total{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:38px;font-weight:600;color:var(--text);
+    line-height:1.1;
+    font-variant-numeric:tabular-nums;
+  }
+  .hero-sub{font-size:12px;color:var(--text-dim);margin-top:5px;}
+
+  h1{font-size:15px;font-weight:600;margin:26px 0 4px;color:var(--text);letter-spacing:0.01em;}
+  .section-hint{font-size:12.5px;color:var(--text-dim);margin:0 0 14px;line-height:1.4;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:14px;
+    overflow:hidden;
+    max-width:100%;
+  }
+
+  label{
+    display:block;font-size:11.5px;color:var(--text-dim);
+    margin-bottom:6px;margin-top:14px;
+  }
+  label:first-of-type{margin-top:0;}
+
+  input.time-num{
+    width:100%;max-width:100%;min-width:0;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:11px 11px;
+    border-radius:9px;
+    font-size:15px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    text-align:center;
+  }
+  select.ampm-select{
+    width:72px;flex:none;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:11px 6px;
+    border-radius:9px;
+    font-size:14px;
+    font-family:inherit;
+    text-align:center;
+  }
+  input.time-num:focus,select.ampm-select:focus{
+    outline:1px solid var(--accent-dim);outline-offset:1px;
+  }
+  .time-row{display:flex;gap:8px;}
+  .time-row>.time-num{flex:1;min-width:0;}
+
+  .row2{display:flex;gap:10px;max-width:100%;}
+  .row2>div{flex:1;min-width:0;}
+
+  /* custom date picker */
+  .date-trigger{
+    width:100%;max-width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:11px 12px;
+    border-radius:9px;
+    font-size:15px;
+    font-family:inherit;
+    text-align:left;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .date-trigger .chev{color:var(--text-dim);font-size:12px;}
+  .date-trigger.open{border-color:var(--accent-dim);}
+  .calendar-panel{
+    margin-top:8px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:12px;
+    max-width:100%;
+  }
+  .cal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .cal-month-label{font-size:13.5px;font-weight:600;color:var(--text);}
+  .cal-nav{
+    background:var(--surface-3);color:var(--text);
+    width:28px;height:28px;border-radius:7px;
+    font-size:15px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .cal-weekdays{
+    display:grid;grid-template-columns:repeat(7,1fr);
+    gap:2px;margin-bottom:4px;
+  }
+  .cal-weekdays span{
+    text-align:center;font-size:10.5px;color:var(--text-dim);
+    padding:4px 0;
+  }
+  .cal-grid{
+    display:grid;grid-template-columns:repeat(7,1fr);
+    gap:2px;
+  }
+  .cal-day{
+    aspect-ratio:1;width:100%;
+    background:transparent;color:var(--text);
+    border-radius:7px;font-size:13px;
+    display:flex;align-items:center;justify-content:center;
+    min-width:0;
+  }
+  .cal-day.blank{visibility:hidden;pointer-events:none;}
+  .cal-day.today{color:var(--accent);font-weight:600;}
+  .cal-day.selected{background:var(--accent);color:#140E00;font-weight:600;}
+
+  /* custom checkbox */
+  .check-row{
+    display:flex;align-items:center;gap:9px;
+    margin-top:16px;font-size:13px;color:var(--text);
+    cursor:pointer;
+  }
+  .check-row input[type=checkbox]{
+    position:absolute;opacity:0;width:0;height:0;
+  }
+  .check-box{
+    width:19px;height:19px;border-radius:5px;flex:none;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .check-row input:checked + .check-box{
+    background:var(--accent);border-color:var(--accent);
+  }
+  .check-row input:checked + .check-box::after{
+    content:'';
+    width:5px;height:9px;
+    border:solid #140E00;
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg) translate(-1px,-1px);
+  }
+  .check-label-dim{color:var(--text-dim);font-size:11.5px;display:block;margin-top:1px;}
+
+  button{
+    font-family:inherit;font-size:14.5px;font-weight:600;
+    border:none;border-radius:9px;cursor:pointer;
+  }
+  .btn-add{
+    width:100%;margin-top:18px;padding:13px;
+    background:var(--accent);color:#140E00;
+    font-size:14.5px;
+  }
+  .btn-add:active{background:var(--accent-dim);color:var(--text);}
+
+  .shift-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;margin-bottom:12px;overflow:hidden;
+    max-width:100%;
+  }
+  .shift-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    flex-wrap:wrap;gap:4px 12px;
+    padding:14px 14px 11px;
+  }
+  .shift-date{font-size:14px;font-weight:600;}
+  .shift-date .ph-badge{
+    font-size:10px;font-weight:700;color:#140E00;background:var(--accent);
+    padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:1px;
+  }
+  .shift-times{font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+  .shift-subtotal{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:16px;font-weight:600;color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
+  .seg-list{border-top:1px solid var(--border);}
+  .seg{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 14px;font-size:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .seg:last-child{border-bottom:none;}
+  .seg-left{color:var(--text-dim);display:flex;align-items:center;}
+  .seg-tag{
+    display:inline-block;font-size:10px;font-weight:600;
+    padding:2px 6px;border-radius:4px;margin-right:7px;
+    background:var(--surface-3);color:var(--text-dim);
+  }
+  .seg-tag.night{background:var(--night-dim);color:var(--night);}
+  .seg-tag.holiday{background:var(--accent);color:#140E00;}
+  .seg-tag.break{background:var(--surface-3);color:var(--danger);}
+  .seg-break-amt{color:var(--danger) !important;}
+  .seg-right{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    color:var(--text);font-variant-numeric:tabular-nums;
+  }
+  .remove-btn{
+    background:none;color:var(--danger);font-size:12px;font-weight:500;
+    padding:9px 14px;width:100%;text-align:left;border-top:1px solid var(--border);
+  }
+  .empty{
+    color:var(--text-dim);font-size:13px;
+    text-align:center;padding:24px 10px;border:1px dashed var(--border);
+    border-radius:12px;
+  }
+
+  details{margin-top:24px;}
+  summary{
+    font-size:12px;color:var(--text-dim);cursor:pointer;
+    padding:4px 0;
+  }
+  .rate-table{
+    margin-top:8px;font-size:12px;color:var(--text-dim);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .rate-row{display:flex;justify-content:space-between;padding:3px 0;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">Total pay</div>
+    <div class="hero-total" id="totalPay">$0.00</div>
+    <div class="hero-sub" id="totalHours">0 shifts &middot; 0.0 hrs</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <h1>Add a shift</h1>
+  <p class="section-hint">Enter when it starts &mdash; if it runs past midnight, just set the end time and it'll split the pay across both days automatically.</p>
+
+  <div class="card">
+    <label>Start date</label>
+    <button type="button" class="date-trigger" id="dateTrigger">
+      <span id="dateTriggerLabel">&ndash;</span>
+      <span class="chev">&#9662;</span>
+    </button>
+    <div class="calendar-panel" id="calendarPanel" hidden>
+      <div class="cal-header">
+        <button type="button" class="cal-nav" id="calPrev">&lsaquo;</button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button type="button" class="cal-nav" id="calNext">&rsaquo;</button>
+      </div>
+      <div class="cal-weekdays">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label for="startTimeNum">Start time</label>
+        <div class="time-row">
+          <input type="text" inputmode="numeric" class="time-num" id="startTimeNum" value="5:00" maxlength="5">
+          <select class="ampm-select" id="startAmpm">
+            <option value="AM">AM</option>
+            <option value="PM" selected>PM</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="endTimeNum">End time</label>
+        <div class="time-row">
+          <input type="text" inputmode="numeric" class="time-num" id="endTimeNum" value="1:00" maxlength="5">
+          <select class="ampm-select" id="endAmpm">
+            <option value="AM" selected>AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <label class="check-row">
+      <input type="checkbox" id="isHoliday">
+      <span class="check-box"></span>
+      <span>
+        Public holiday
+        <span class="check-label-dim">250% flat rate, no evening loading</span>
+      </span>
+    </label>
+
+    <button class="btn-add" id="addBtn">Add shift</button>
+  </div>
+
+  <h1>Shifts</h1>
+  <div id="shiftList">
+    <div class="empty" id="emptyMsg">No shifts added yet</div>
+  </div>
+
+  <details>
+    <summary>Rates used</summary>
+    <div class="rate-table">
+      <div class="rate-row"><span>Base</span><span>$27.08</span></div>
+      <div class="rate-row"><span>Mon&ndash;Fri (125%)</span><span>$33.85</span></div>
+      <div class="rate-row"><span>Saturday (150%)</span><span>$40.62</span></div>
+      <div class="rate-row"><span>Sunday (175%)</span><span>$47.39</span></div>
+      <div class="rate-row"><span>Public holiday (250%)</span><span>$67.70</span></div>
+      <div class="rate-row"><span>Evening 7pm&ndash;12am (Mon&ndash;Fri only)</span><span>+$2.95/hr</span></div>
+      <div class="rate-row"><span>Night 12am&ndash;7am (Mon&ndash;Fri only)</span><span>+$4.22/hr</span></div>
+      <div class="rate-row"><span>Unpaid break (shifts &gt;6h)</span><span>&minus;30 min</span></div>
+    </div>
+  </details>
+
+</div>
+
+<script>
+const RATES = {
+  dayRate: [47.39, 33.85, 33.85, 33.85, 33.85, 33.85, 40.62], // Sun..Sat
+  eveningPenalty: 2.95, // 19:00-24:00, Mon-Fri only
+  nightPenalty: 4.22,   // 00:00-07:00, Mon-Fri only
+  publicHoliday: 67.70, // 250% of base, flat, overrides day rate + loadings
+};
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let shifts = [];
+
+function fmtMoney(n){
+  return '$' + n.toLocaleString('en-AU', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtHours(h){
+  return (Math.round(h*100)/100).toString().replace(/\.?0+$/,'') || '0';
+}
+function parseTimeToHours(t){
+  const [h,m] = t.split(':').map(Number);
+  return h + m/60;
+}
+function addDays(dateStr, n){
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + n);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+}
+function toDateStr(y,m,d){
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+// ---- custom calendar date picker ----
+const today = new Date();
+let selected = {y: today.getFullYear(), m: today.getMonth(), d: today.getDate()};
+let view = {y: today.getFullYear(), m: today.getMonth()};
+
+function renderDateTrigger(){
+  const d = new Date(selected.y, selected.m, selected.d);
+  document.getElementById('dateTriggerLabel').textContent =
+    d.toLocaleDateString('en-AU', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+}
+
+function renderCalendar(){
+  document.getElementById('calMonthLabel').textContent = `${MONTH_NAMES[view.m]} ${view.y}`;
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const firstDow = new Date(view.y, view.m, 1).getDay();
+  const daysInMonth = new Date(view.y, view.m+1, 0).getDate();
+
+  for(let i=0;i<firstDow;i++){
+    const blank = document.createElement('div');
+    blank.className = 'cal-day blank';
+    grid.appendChild(blank);
+  }
+  for(let day=1; day<=daysInMonth; day++){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cal-day';
+    btn.textContent = day;
+    const isToday = view.y===today.getFullYear() && view.m===today.getMonth() && day===today.getDate();
+    const isSelected = view.y===selected.y && view.m===selected.m && day===selected.d;
+    if(isToday) btn.classList.add('today');
+    if(isSelected) btn.classList.add('selected');
+    btn.addEventListener('click', () => {
+      selected = {y: view.y, m: view.m, d: day};
+      renderDateTrigger();
+      renderCalendar();
+      closeCalendar();
+    });
+    grid.appendChild(btn);
+  }
+}
+
+function openCalendar(){
+  view = {y: selected.y, m: selected.m};
+  renderCalendar();
+  document.getElementById('calendarPanel').hidden = false;
+  document.getElementById('dateTrigger').classList.add('open');
+}
+function closeCalendar(){
+  document.getElementById('calendarPanel').hidden = true;
+  document.getElementById('dateTrigger').classList.remove('open');
+}
+document.getElementById('dateTrigger').addEventListener('click', () => {
+  const panel = document.getElementById('calendarPanel');
+  panel.hidden ? openCalendar() : closeCalendar();
+});
+document.getElementById('calPrev').addEventListener('click', () => {
+  view.m--; if(view.m<0){view.m=11; view.y--;}
+  renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', () => {
+  view.m++; if(view.m>11){view.m=0; view.y++;}
+  renderCalendar();
+});
+
+function readDateField(){
+  return toDateStr(selected.y, selected.m, selected.d);
+}
+
+// ---- typed time inputs (H:MM, snapped to 15-min increments) + AM/PM select ----
+function parseTypedTime(raw){
+  let digits = raw.replace(/[^0-9]/g,'').slice(0,4);
+  let hour, minute;
+  if(digits.length === 0){ hour = 12; minute = 0; }
+  else if(digits.length <= 2){ hour = parseInt(digits,10); minute = 0; }
+  else if(digits.length === 3){ hour = parseInt(digits.slice(0,1),10); minute = parseInt(digits.slice(1),10); }
+  else { hour = parseInt(digits.slice(0,2),10); minute = parseInt(digits.slice(2),10); }
+  if(isNaN(hour) || hour < 1) hour = 12;
+  if(hour > 12) hour = 12;
+  if(isNaN(minute)) minute = 0;
+  minute = Math.round(minute/15)*15;
+  if(minute >= 60) minute = 45; // guard edge case
+  return {hour, minute};
+}
+function wireTypedTime(inputId){
+  const inp = document.getElementById(inputId);
+  // Select existing text on focus so the first digit typed replaces it
+  // instead of appending to it (e.g. tapping in on "5:00" and typing "5"
+  // gives "5", not "5:005").
+  inp.addEventListener('focus', () => {
+    inp.select();
+  });
+  inp.addEventListener('input', () => {
+    inp.value = inp.value.replace(/[^0-9:]/g,'');
+  });
+  inp.addEventListener('blur', () => {
+    const {hour, minute} = parseTypedTime(inp.value);
+    inp.value = `${hour}:${String(minute).padStart(2,'0')}`;
+  });
+}
+wireTypedTime('startTimeNum');
+wireTypedTime('endTimeNum');
+
+function readTypedTime(numId, ampmId){
+  const {hour, minute} = parseTypedTime(document.getElementById(numId).value);
+  const ampm = document.getElementById(ampmId).value;
+  let h24 = hour % 12;
+  if(ampm === 'PM') h24 += 12;
+  return `${String(h24).padStart(2,'0')}:${String(minute).padStart(2,'0')}`;
+}
+
+// Splits one shift into per-calendar-day segments, then each day segment
+// into [0-7) / [7-19) / [19-24) windows, computing rate for each.
+// isHoliday only applies to the segment matching the original start date —
+// the portion of an overnight shift that lands on the next calendar day
+// reverts to normal day-of-week rules.
+function calcShift(dateStr, startTime, endTime, isHoliday){
+  let startH = parseTimeToHours(startTime);
+  let endH = parseTimeToHours(endTime);
+  let crossesMidnight = endH <= startH;
+  let totalSpan = crossesMidnight ? (24 - startH) + endH : endH - startH;
+
+  const daySegments = [];
+  if(!crossesMidnight){
+    daySegments.push({date: dateStr, from: startH, to: endH});
+  } else {
+    daySegments.push({date: dateStr, from: startH, to: 24});
+    daySegments.push({date: addDays(dateStr,1), from: 0, to: endH});
+  }
+
+  const windows = [
+    {from:0, to:7, penalty: RATES.nightPenalty},
+    {from:7, to:19, penalty: 0},
+    {from:19, to:24, penalty: RATES.eveningPenalty},
+  ];
+
+  const segs = [];
+  for(const day of daySegments){
+    const d = new Date(day.date + 'T00:00:00');
+    const dow = d.getDay(); // 0=Sun..6=Sat
+    const isHolidayDay = !!isHoliday && day.date === dateStr;
+    const base = isHolidayDay ? RATES.publicHoliday : RATES.dayRate[dow];
+    const eveningApplies = isHolidayDay ? false : (dow >= 1 && dow <= 5);
+    for(const w of windows){
+      const from = Math.max(day.from, w.from);
+      const to = Math.min(day.to, w.to);
+      const hours = to - from;
+      if(hours <= 0) continue;
+      const penalty = eveningApplies ? w.penalty : 0;
+      const rate = base + penalty;
+      const tag = isHolidayDay ? 'holiday' : (penalty>0 ? 'night' : '');
+      segs.push({date: day.date, dow, from, to, hours, rate, tag});
+    }
+  }
+
+  const subtotal0 = segs.reduce((s,x)=> s + x.hours*x.rate, 0);
+
+  // Unpaid 30-min break, automatically deducted for any shift over 6 hours.
+  // Cut from the end of the shift (last segment(s) chronologically) since
+  // exact break timing isn't tracked.
+  let breakHours = totalSpan > 6 ? 0.5 : 0;
+  let breakDeduction = 0;
+  let subtotal = subtotal0;
+  if(breakHours > 0){
+    let remaining = breakHours;
+    for(let i = segs.length - 1; i >= 0 && remaining > 1e-9; i--){
+      const cut = Math.min(remaining, segs[i].hours);
+      segs[i].hours -= cut;
+      segs[i].to -= cut; // keep the displayed time range in sync with the trimmed hours
+      const amt = cut * segs[i].rate;
+      subtotal -= amt;
+      breakDeduction += amt;
+      remaining -= cut;
+    }
+    for(let i = segs.length - 1; i >= 0; i--){
+      if(segs[i].hours <= 1e-9) segs.splice(i, 1);
+    }
+  }
+  const paidHours = totalSpan - breakHours;
+
+  return {segs, subtotal, totalSpan, breakHours, breakDeduction, paidHours};
+}
+
+function hoursLabel(h){
+  const hh = Math.floor(h);
+  const mm = Math.round((h-hh)*60);
+  const period = h < 12 ? 'am' : 'pm';
+  let hh12 = hh % 12; if(hh12===0) hh12 = 12;
+  return mm===0 ? `${hh12}${period}` : `${hh12}:${String(mm).padStart(2,'0')}${period}`;
+}
+
+function render(){
+  const list = document.getElementById('shiftList');
+  const empty = document.getElementById('emptyMsg');
+  list.innerHTML = '';
+  if(shifts.length === 0){
+    list.appendChild(empty);
+  } else {
+    shifts.forEach((s, idx) => {
+      const card = document.createElement('div');
+      card.className = 'shift-card';
+
+      const d = new Date(s.dateStr + 'T00:00:00');
+      const dateLabel = d.toLocaleDateString('en-AU', {weekday:'short', day:'numeric', month:'short'});
+      const hasHoliday = s.calc.segs.some(x => x.tag === 'holiday');
+
+      let segsHtml = s.calc.segs.map(seg => {
+        const dayLabel = DAY_NAMES[seg.dow];
+        let tagHtml;
+        if(seg.tag === 'holiday') tagHtml = `<span class="seg-tag holiday">Holiday</span>`;
+        else if(seg.tag === 'night') tagHtml = `<span class="seg-tag night">Night</span>`;
+        else tagHtml = `<span class="seg-tag">Day</span>`;
+        return `<div class="seg">
+          <span class="seg-left">${tagHtml}${dayLabel} ${hoursLabel(seg.from)}&ndash;${hoursLabel(seg.to)}</span>
+          <span class="seg-right">${fmtHours(seg.hours)}h &times; ${fmtMoney(seg.rate)}</span>
+        </div>`;
+      }).join('');
+
+      if(s.calc.breakHours > 0){
+        segsHtml += `<div class="seg">
+          <span class="seg-left"><span class="seg-tag break">Break</span>Unpaid (auto, &gt;6h shift)</span>
+          <span class="seg-right seg-break-amt">&minus;${fmtHours(s.calc.breakHours)}h &middot; &minus;${fmtMoney(s.calc.breakDeduction)}</span>
+        </div>`;
+      }
+
+      const timesLine = s.calc.breakHours > 0
+        ? `${hoursLabel(parseTimeToHours(s.startTime))}&ndash;${hoursLabel(parseTimeToHours(s.endTime))} &middot; ${fmtHours(s.calc.totalSpan)}h shift &middot; ${fmtHours(s.calc.paidHours)}h paid`
+        : `${hoursLabel(parseTimeToHours(s.startTime))}&ndash;${hoursLabel(parseTimeToHours(s.endTime))} &middot; ${fmtHours(s.calc.totalSpan)}h`;
+
+      card.innerHTML = `
+        <div class="shift-head">
+          <div>
+            <div class="shift-date">${dateLabel}${hasHoliday ? '<span class="ph-badge">PH</span>' : ''}</div>
+            <div class="shift-times">${timesLine}</div>
+          </div>
+          <div class="shift-subtotal">${fmtMoney(s.calc.subtotal)}</div>
+        </div>
+        <div class="seg-list">${segsHtml}</div>
+        <button class="remove-btn" data-idx="${idx}">Remove</button>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  const total = shifts.reduce((s,x)=> s + x.calc.subtotal, 0);
+  const totalHrs = shifts.reduce((s,x)=> s + x.calc.paidHours, 0);
+  document.getElementById('totalPay').textContent = fmtMoney(total);
+  document.getElementById('totalHours').textContent =
+    `${shifts.length} shift${shifts.length!==1?'s':''} \u00b7 ${fmtHours(totalHrs)} hrs`;
+
+  list.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      shifts.splice(Number(btn.dataset.idx), 1);
+      render();
+    });
+  });
+}
+
+document.getElementById('addBtn').addEventListener('click', () => {
+  const dateStr = readDateField();
+  const startTime = readTypedTime('startTimeNum', 'startAmpm');
+  const endTime = readTypedTime('endTimeNum', 'endAmpm');
+  const isHoliday = document.getElementById('isHoliday').checked;
+  const calc = calcShift(dateStr, startTime, endTime, isHoliday);
+  shifts.push({dateStr, startTime, endTime, calc});
+  document.getElementById('isHoliday').checked = false;
+  render();
+});
+
+// defaults
+renderDateTrigger();
+render();
+</script>
+</body>
+</html>
