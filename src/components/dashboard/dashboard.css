@@ -1,0 +1,34 @@
+/* Carried over from the watermelon library-dashboard template; colours now
+   come from the app palette in globals.css. */
+
+body:has(.app-shell) [data-slot='tooltip-content'] {
+  background-color: var(--foreground) !important;
+  color: var(--background) !important;
+}
+
+body:has(.app-shell) [data-slot='tooltip-content'] > svg {
+  background-color: var(--foreground) !important;
+  fill: var(--foreground) !important;
+}
+
+.app-shell .bg-input {
+  background-color: var(--input);
+}
+
+.app-shell input::placeholder,
+.app-shell textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+.app-shell * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.app-shell *::-webkit-scrollbar {
+  display: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
